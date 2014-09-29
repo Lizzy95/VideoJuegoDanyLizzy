@@ -40,8 +40,11 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
     private int iDireccion;  // indica la direccion de Nena
     private int iScore; // score del juego
     private int iColisiones; // contador de las colisiones
+    private int iColision;
     private int iCorre; // numero aletorio de corredores
     private int iCamina;  //numero aletorio de caminadores
+    private int iPosXBolita;
+    private int iPosYBolita;
     private Image    imaImagenJFrame;   // Imagen a proyectar en Applet	
     private Image imaGameOver; // imagen del fin del juego
     private Image imaFondo; // imagen de fondo
@@ -115,6 +118,9 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         
         // incializa las colisiones en 0
         iColisiones = 0;
+        
+        // inicializa las colision 1
+        iColision = 1;
 
         // se crea el sombrero
         URL urlImagenSombrero = this.getClass().getResource("sombrero2.png");
@@ -130,7 +136,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         perSombrero.setX(posX-perSombrero.getAncho()/2);
         perSombrero.setY(posY-perSombrero.getAlto());
  
-                
+        perSombrero.setVelocidad(4);
                 
         // se crea la changuita nena 
         int posXBol = (getWidth() / 2);
@@ -145,6 +151,8 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
 
         perBolita.setX(posXBol-perBolita.getAncho()/2);
         perBolita.setY(posYBol-perBolita.getAlto()/2);
+        
+        perBolita.setVelocidad(4);
         
         int posXMen = (getWidth()/2);
         int posYMen = (getHeight()/2);
@@ -246,7 +254,34 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                 break;
             }
         }
-        
+        if (booSpace) {
+            switch(iColision){
+                case 1: { // si se mueve hacia arriba 
+                    perBolita.setX(perBolita.getX()+perBolita.getVelocidad());
+                    perBolita.setY(perBolita.getY()-perBolita.getVelocidad());
+                    break;    	
+                }     
+                case 2: { // si se mueve hacia abajo y sale de la ventana
+                    // del cuadrante 3             
+                        perBolita.setX(perBolita.getX()-perBolita.getVelocidad());
+                        perBolita.setY(perBolita.getY()+ perBolita.getVelocidad());
+                    // se queda en su lugar sin salirse del applet
+  
+                break;    	
+                } 
+                case 3: {// si se mueve hacia abajo cuadrante 4
+                    perBolita.setY(perBolita.getY()+ perBolita.getVelocidad());
+                    perBolita.setX(perBolita.getX()+ perBolita.getVelocidad());
+                    
+                    break;
+                }    
+                case 4: { // si se hacia arriba cuadrante 2
+                        perBolita.setX(perBolita.getX()-perBolita.getVelocidad());
+                        perBolita.setY(perBolita.getY()- perBolita.getVelocidad());                  
+                    break;    	
+                }
+            }   
+        }
     }
 	
     /**
@@ -258,45 +293,101 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
      */
     public synchronized void checaColision(){
         //Colision de Nena con el Applet dependiendo a donde se mueve.
-        switch(iDireccion){
-            case 1: { // si se mueve hacia arriba 
+            // si se mueve hacia arriba 
                 if(perBolita.getY() < 0) { // y esta pasando el limite
-                    // se queda en su lugar sin salirse del applet
-                    perBolita.setX(perBolita.getX()); 
-                    perBolita.setY(0);
+                    
+                    // se queda en su lugar sin salirse del applet                  
+                    if(perBolita.getX() <= (getWidth()/2)) {
+                        iColision = 3;                     
+                    }
+                    else
+                    {
+                        iColision = 2;
+                    } 
                 }
-                break;    	
-            }     
-            case 2: { // si se mueve hacia abajo
+               // si se mueve hacia abajo
                 // y se esta saliendo del applet
-                if(perBolita.getY() + perBolita.getAlto() > getHeight()) {
+                else if(perBolita.getY() + perBolita.getAlto() > getHeight()) {
                     // se queda en su lugar sin salirse del applet
-                    perBolita.setX(perBolita.getX()); 
-                    perBolita.setY(getHeight()-perBolita.getAlto());
-                  
+                    booSpace = false;
+                    reposiciona();               
                 }
-                break;    	
-            } 
-            case 3: { // si se mueve hacia izquierda 
-                if(perBolita.getX() < 0) { // y se sale del applet
+                
+                else if(perBolita.getX() < 0) { // y se sale del applet
                     // se queda en su lugar sin salirse del applet
-                    perBolita.setX(0); 
-                    perBolita.setY((perBolita.getY()));
+                    if(iColision == 2){                    
+                         iColision = 3;
+                    }
+                    else if(iColision == 3 ){  
+                        iColision = 2;
+                    }
+                    else if(iColision == 1) {
+                        iColision = 4;
+                    }
+                    else if(iColision == 4){
+                        iColision = 1;
+                    }
+                    
               
                 }
-                break;    	
-            }    
-            case 4: { // si se mueve hacia derecha 
+               
                 // si se esta saliendo del applet
-                if(perBolita.getX() + perBolita.getAncho() > getWidth()) { 
+                else if(perBolita.getX() + perBolita.getAncho() > getWidth()) { 
                     // se queda en su lugar sin salirse del applet
-                    perBolita.setX(getWidth() - perBolita.getAncho()); 
-                    perBolita.setY((perBolita.getY()));
-          
+                    if(iColision== 2){
+                         iColision = 3;
+                    }
+                    else if(iColision == 3 ){
+                        iColision = 2;
+                    }
+                    else if(iColision == 1) {
+                        iColision = 4;
+                    }
+                    else if(iColision == 4){
+                        iColision = 1;
+                    }
                 }
-                break;    	
-            }			
-        }
+                else if(perBolita.colisiona(perSombrero)){
+                   
+                    if(perBolita.getX() <= (perSombrero.getX()+ (perSombrero.getAncho()/2))){
+                        
+                        iColision = 4;
+                    }
+                    else
+                    {  
+                        iColision=1;
+                    }        
+                }
+                
+                
+                
+                switch(iDireccion){
+                    case 1: { // si se mueve hacia izquierda
+                        if(perSombrero.getX() < 0) { // y se sale del applet
+                    // se queda en su lugar sin salirse del applet
+                            perSombrero.setX(0); 
+                            perSombrero.setY((perSombrero.getY()));
+                            if(!booSpace) {
+                                perBolita.setX((perSombrero.getX()+(perSombrero.getAncho()/2)) - (perBolita.getAncho()/2));
+                            }
+                        }
+                    break;    	
+                    }    
+                    case 2: { // si se mueve hacia derecha 
+                            // si se esta saliendo del applet
+                        if(perSombrero.getX() + perSombrero.getAncho() > getWidth()) { 
+                             // se queda en su lugar sin salirse del applet
+                            perSombrero.setX(getWidth() - perSombrero.getAncho()); 
+                            perSombrero.setY((perSombrero.getY()));
+                            if(!booSpace) {
+                                perBolita.setX((perSombrero.getX()+(perSombrero.getAncho()/2)) - (perBolita.getAncho()/2));
+                            }
+                            
+                        }
+                    break;    	
+                    }			
+                }
+                
     }
  /**
      * reposiciona 
@@ -306,10 +397,12 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
      * 
      */
 
-    public void reposiciona(Personaje perPildoraR) {
+    public void reposiciona() {
         // indica las nuevas posiciones de la galleta
-        perPildoraR.setX(0-100);    
-        perPildoraR.setY((int) (Math.random() * (getHeight()))); 
+        perSombrero.setX((getWidth()/2) - (perSombrero.getAncho()/2));
+        perSombrero.setY((getHeight())- (perSombrero.getAlto()));
+        perBolita.setX((getWidth()/2)- (perBolita.getAncho()/2));
+        perBolita.setY((getHeight()-perSombrero.getAlto())-(perBolita.getAlto()));
     }
     
    
