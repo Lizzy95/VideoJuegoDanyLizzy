@@ -39,13 +39,13 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
     private int iVidas; // variable para manejrar las vidas
     private int iDireccion;  // indica la direccion de Nena
     private int iScore; // score del juego
-    private int iColisiones; // contador de las colisiones
+    private int iColRoja; // contador de las colisiones
+    private int iColAzul; // contador de colisones azul
     private int iColision;
-    private int iCorre; // numero aletorio de corredores
-    private int iCamina;  //numero aletorio de caminadores
+    private int iColMenta; // contador de colisiones de mentafetamina
     private int iPosXBolita;
     private int iPosYBolita;
-    private Image    imaImagenJFrame;   // Imagen a proyectar en Applet	
+    private Image imaImagenJFrame;   // Imagen a proyectar en Applet	
     private Image imaGameOver; // imagen del fin del juego
     private Image imaFondo; // imagen de fondo
     private Image imaPausa; // imagen al pausar el juego
@@ -55,8 +55,9 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
     private Personaje perBolita; // objeto de la clase personaje
     private Personaje perSombrero; // objeto de la clase personaje
     private Personaje perMentafetamina; // objeto de la clase personaje
-    private LinkedList objCaminadores; //objetos de la linkedlist de caminadores
-    private LinkedList objCorredores; // objetos de la linkedlist de corredores
+    private Personaje perVidas; // objeto de la clase personaje de vidas
+    private LinkedList objPildoraRoja; //objetos de la linkedlist de caminadores
+    private LinkedList objPildoraAzul; // objetos de la linkedlist de corredores
     private int iVelocidad; // velocidad de corre
     private SoundClip souCamina; // sonido alegre
     private SoundClip souCorre; //sonido triste de cuando choca
@@ -64,6 +65,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
     private String strNombreJugador; // nombre del jugador
     private String[] strArr; // arreglo del archivo dividido
     private boolean booPausa; // booleana para activar pausar
+    private boolean booAyuda; // booleano para ctivar la ayuda
     private boolean booGuardar; //booleana para activar guardad
     private boolean booSpace; // booleana para activar que se valla la bolita
     private JList jliScore; //Lista para desplegar el puntaje
@@ -101,6 +103,9 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         // se inicializa space en false
         booSpace = false;
         
+        // se incializa la ayuda en true para que se muestre la informacion
+        booAyuda = true;
+        
         // se da el nombre del archivo
         strNombreArchivo = "Puntaje.txt";
         
@@ -117,10 +122,16 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         iScore = 0;
         
         // incializa las colisiones en 0
-        iColisiones = 0;
+        iColRoja = 0;
+        
+        //inicializa las colisiones en 0
+        iColAzul = 0;
         
         // inicializa las colision 1
         iColision = 1;
+        
+        // inicializa el contador de colisiones de mentafetamina en 0
+        iColMenta = 0;
 
         // se crea el sombrero
         URL urlImagenSombrero = this.getClass().getResource("sombrero2.png");
@@ -155,7 +166,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         perBolita.setVelocidad(4);
         
         int posXMen = (getWidth()/2);
-        int posYMen = (getHeight()/2);
+        int posYMen = 150;
         
         URL urlImagenMentafetamina = this.getClass().getResource("mentafetamina.png");
         perMentafetamina = new Personaje( posXMen, posYMen,
@@ -163,6 +174,56 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         perMentafetamina.setX(posXMen - perMentafetamina.getAncho()/2);
         perMentafetamina.setY(posYMen - perMentafetamina.getAlto()/2);
         
+        int posXPil = 40;
+        int posYPil = 190;
+        
+        
+        // se crea la lista de pildora roja
+        objPildoraRoja = new LinkedList();
+        
+        // inicializa la lista de pildora1
+        for ( int i = 0; i < 9; i++) {
+            // se posiciona la pildora 1 en la tabla periodica
+            for (int j = 0; j < 5; j++) {
+                URL urlImagenPildora = this.getClass().getResource("pildora1.png");
+                Personaje perPildora1 = new Personaje(posXPil, posYPil,
+                        Toolkit.getDefaultToolkit().getImage(urlImagenPildora));
+                objPildoraRoja.add(perPildora1);
+                posYPil= posYPil+40;
+            }    
+            posXPil= posXPil +40;
+            posYPil= 190;
+        }
+        
+        int posXPil2 = 410;
+        int posYPil2 = 190;
+         // se crea la lista de pildora roja
+        objPildoraAzul = new LinkedList();
+        
+        // inicializa la lista de pildora1
+        for ( int i = 0; i < 9; i++) {
+            // se posiciona la pildora 1 en la tabla periodica
+            for (int j = 0; j < 5; j++) {
+                URL urlImagenPildora2 = this.getClass().getResource("pildora2.png");
+                Personaje perPildora2 = new Personaje(posXPil2, posYPil2,
+                        Toolkit.getDefaultToolkit().getImage(urlImagenPildora2));
+                objPildoraAzul.add(perPildora2);
+                posYPil2= posYPil2+40;
+            }    
+            posXPil2= posXPil2 +40;
+            posYPil2= 190;
+        }
+        
+        // se crea la imagend e las vidas
+        int posXVidas = (int) (Math.random() * (getWidth()- 60));    
+        int posYVidas = (int) (Math.random() * (getHeight()/2))*(-1);  
+        URL urlImagenVidas = this.getClass().getResource("vidas.png");
+        perVidas = new Personaje(posXVidas, posYVidas,
+                        Toolkit.getDefaultToolkit().getImage(urlImagenVidas));
+        
+        
+        // establece la velocidad en la que caera la botella
+        perVidas.setVelocidad(4);        
         addKeyListener(this);
            
     }
@@ -200,7 +261,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                se checa si hubo colisiones para desaparecer jugadores o corregir
                movimientos y se vuelve a pintar todo
             */ 
-            if(!booPausa){
+            if(!booPausa && !booAyuda){
                 actualiza();
                 checaColision();
                 repaint();
@@ -282,6 +343,10 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                 }
             }   
         }
+        
+        if(iVidas <= 4){
+            perVidas.setY(perVidas.getY() + perVidas.getVelocidad());
+        }
     }
 	
     /**
@@ -310,6 +375,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                 else if(perBolita.getY() + perBolita.getAlto() > getHeight()) {
                     // se queda en su lugar sin salirse del applet
                     booSpace = false;
+                    iVidas--;
                     reposiciona();               
                 }
                 
@@ -388,6 +454,81 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                     }			
                 }
                 
+                for(Object objRoja :objPildoraRoja){
+                    Personaje perPildora1 = (Personaje) objRoja; 
+                    if(perPildora1.colisiona(perBolita)){
+                        iScore++;
+                        if(iColision== 1){
+                            iColision = 2;
+                        }
+                        else if(iColision == 4 ){
+                            iColision = 3;
+                        }
+                        else if(iColision == 3) {
+                            iColision = 4;
+                        }
+                        else if(iColision == 2){
+                            iColision = 1;
+                        }
+                        perPildora1.setX(-getWidth());
+                        perPildora1.setY(-(getHeight()/2));
+                    }
+                }
+                for(Object objAzul :objPildoraAzul){
+                    Personaje perPildora2 = (Personaje) objAzul; 
+                    if(perPildora2.colisiona(perBolita)){
+                        
+                        iColAzul++;
+                        if (iColAzul == 2) {
+                            iScore=iScore+2;
+                            perPildora2.setX(-getWidth());
+                            perPildora2.setY(-(getHeight()/2));
+                            iColAzul=0;
+                        }
+                        else{
+                            if(iColision== 1){
+                                iColision = 2;
+                            }
+                            else if(iColision == 4 ){
+                                iColision = 3;
+                            }
+                            else if(iColision == 3) {
+                                iColision = 4;
+                            }
+                            else if(iColision == 2){
+                                iColision = 1;
+                            }
+                        }
+                        
+                        
+                    }
+                }
+                
+                if (perMentafetamina.colisiona(perBolita)) {
+                    iColMenta++;
+                    if (iColMenta == 5) {
+                        perMentafetamina.setX(-getWidth()/2);
+                        perMentafetamina.setY(-getHeight()/2);
+                    }
+                    else{
+                        
+                        if(iColision== 1){
+                            iColision = 2;
+                        }
+                        else if(iColision == 4 ){
+                            iColision = 3;
+                        }
+                        else if(iColision == 3) {
+                            iColision = 4;
+                        }
+                        else if(iColision == 2){
+                           iColision = 1;
+                        }
+                    }
+                }
+                if(perVidas.colisiona(perSombrero)){
+                    iVidas++;
+                }
     }
  /**
      * reposiciona 
@@ -474,6 +615,16 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
             grabaArchivo();
             }
         }
+        else if(keyEvent.getKeyCode() == KeyEvent.VK_A){
+            booAyuda = !booAyuda;
+        }
+        else if(keyEvent.getKeyCode() == KeyEvent.VK_R){
+            objPildoraRoja.clear();
+            objPildoraAzul.clear();
+            setSize(800,600);
+            init();
+            start();
+        }
         repaint();
     }
     
@@ -523,7 +674,14 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
      * 
      */
     public void paint1(Graphics g) {
-        if (iVidas <= 0) { 
+        if(booAyuda){
+            URL urlImagenAyuda = this.getClass().getResource("Inicio.jpg");
+            Image imaImagenJuego = Toolkit.getDefaultToolkit().
+                                    getImage(urlImagenAyuda);
+            graGraficaJFrame.drawImage(imaImagenJuego, 0, 0,
+                    getWidth(), getHeight(), this);
+        }
+        else if (iVidas <= 0) { 
             // creo imagen para el background
             URL urlImagenFondo = this.getClass().getResource("game_over.jpg");
                 Image imaImagenJuego = Toolkit.getDefaultToolkit().
@@ -543,7 +701,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
             g.drawString("Score: " + Integer.toString(iScore), 95, 35);
             
             // desplegar imagenes
-            if (perBolita != null && perSombrero != null && perMentafetamina != null) {
+            if (perBolita != null && perSombrero != null && perMentafetamina != null && objPildoraRoja.size() != 0 && objPildoraAzul.size() != 0 && perVidas != null) {
                 //Dibuja la imagen de Nena en la posicion actualizada
                 g.drawImage(perBolita.getImagen(), perBolita.getX(),
                         perBolita.getY(), this);
@@ -553,7 +711,25 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                 //Dibuja la mentafetamina
                 g.drawImage(perMentafetamina.getImagen(), perMentafetamina.getX(),
                         perMentafetamina.getY(), this);
-             
+                
+                //Dibuja las vidas
+                g.drawImage(perVidas.getImagen(), perVidas.getX(), 
+                        perVidas.getY(), this);
+          
+                for( Object objRoja :objPildoraRoja){
+                    Personaje perPildora1 = (Personaje) objRoja;
+                    //Dibuja la imagen de pildora roja en la posicion actualizada
+                    g.drawImage(perPildora1.getImagen(), perPildora1.getX(),
+                           perPildora1.getY(), this);
+                }
+                
+                for(Object objAzul :objPildoraAzul){
+                    Personaje perPildora2 = (Personaje) objAzul;
+                    // Dibuja la imagen de pildora azul en la posicion actualizada
+                    g.drawImage(perPildora2.getImagen(), perPildora2.getX(), 
+                            perPildora2.getY(), this);
+                }
+                
 
             }
         }
@@ -568,8 +744,8 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
      */
     public  void leeArchivo() throws IOException {
         BufferedReader fileIn;
-        objCaminadores.clear();
-        objCorredores.clear();
+        objPildoraRoja.clear();
+        objPildoraAzul.clear();
         try {
             fileIn = new BufferedReader(new FileReader(strNombreArchivo));
         } catch (FileNotFoundException e){
@@ -589,15 +765,15 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         iVidas = (Integer.parseInt(strArr[1]));
         perBolita.setX((Integer.parseInt(strArr[2])));
         perBolita.setY((Integer.parseInt(strArr[3])));
-        iCamina = (Integer.parseInt(strArr[4]));
-        iCorre = (Integer.parseInt(strArr[5]));
-        iColisiones = (Integer.parseInt(strArr[6]));
+        iColRoja = (Integer.parseInt(strArr[4]));
+        iColAzul = (Integer.parseInt(strArr[5]));
+        iColMenta = (Integer.parseInt(strArr[6]));
         iVelocidad = (Integer.parseInt(strArr[7]));
         // lee otra linea del archivo
         dato = fileIn.readLine();
         URL urlImagenCamina = this.getClass().getResource("alien1Camina.gif");
                
-        for ( int i = 0; i <= iCamina; i++) {
+        for ( int i = 0; i <= 45; i++) {
          // se posiciona a Susy en alguna parte al azar del cuadrante
             strArr = dato.split(",");  
             int iPosX = (Integer.parseInt(strArr[0]));
@@ -605,20 +781,20 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
             // se crea el objeto camina
             Personaje perPildoraR = new Personaje(iPosX, iPosY,
                         Toolkit.getDefaultToolkit().getImage(urlImagenCamina));
-            objCaminadores.add(perPildoraR);  
+            objPildoraRoja.add(perPildoraR);  
                     // lee otra linea del archivo
             dato = fileIn.readLine();
         }
         
         URL urlImagenCorre = this.getClass().getResource("alien2Corre.gif");
-        for (int i = 0; i <= iCorre; i++) {
+        for (int i = 0; i <= 45; i++) {
             // se posiciona a Susy en alguna parte al azar del cuadrante
             int iPosCorreX = (Integer.parseInt(strArr[0]));
             int iPosCorreY = (Integer.parseInt(strArr[1]));
             // se crea el objeto camina
             Personaje perPildoraA = new Personaje(iPosCorreX,iPosCorreY ,
                     Toolkit.getDefaultToolkit().getImage(urlImagenCorre));
-            objCorredores.add(perPildoraA);  
+            objPildoraAzul.add(perPildoraA);  
             // lee otra linea del archivo
             dato = fileIn.readLine();
             strArr = dato.split(",");
@@ -639,16 +815,16 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                                         FileWriter(strNombreArchivo));
             // graba en el archivo la informacion del juego
             fileOut.println(iScore+ ","+ iVidas+ ","+ perBolita.getX()
-                    + ","+ perBolita.getY()+ ","+ iCamina+ ","+ iCorre+ ","
-                                                +iColisiones+ ","+iVelocidad);
+                    + ","+ perBolita.getY()+ ","+ iColRoja+ ","+ iColAzul+ ","
+                                                +iColMenta+ ","+iVelocidad);
             // graba en el archivo la  posicion de caminadores
-            for( Object objCamina :objCaminadores) {
+            for( Object objCamina :objPildoraRoja) {
                 Personaje perPildoraR = (Personaje) objCamina;
                 fileOut.println(perPildoraR.getX() + ","+perPildoraR.getY());
                 
             }
             //graba en el archivo la poicion de corredores
-            for( Object objCorre :objCorredores){
+            for( Object objCorre :objPildoraAzul){
                 Personaje perPildoraA = (Personaje) objCorre;
                 //Dibuja la imagen de corre en la posicion actualizada
                 fileOut.println(perPildoraA.getX() +"," + perPildoraA.getY());
