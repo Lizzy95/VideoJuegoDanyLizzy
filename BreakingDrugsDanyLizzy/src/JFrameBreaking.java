@@ -47,6 +47,8 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
     private int iPosYBolita;// posicion de y de bola
     private int iPosXAnim; // coordenadas de la imagen anim
     private int iPosYAnim; //coordenadas de la imagen anim
+    private int iPosXBotella; // coordenadas de la imagen de botella
+    private int iPosYBotella; // coordenadas de la imagen botella
     private Image imaImagenJFrame;   // Imagen a proyectar en Applet	
     private Image imaGameOver; // imagen del fin del juego
     private Image imaFondo; // imagen de fondo
@@ -58,6 +60,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
     private Personaje perSombrero; // objeto de la clase personaje
     private Personaje perMentafetamina; // objeto de la clase personaje
     private Personaje perVidas; // objeto de la clase personaje de vidas
+    private Personaje perAmbulancia;
     private LinkedList objPildoraRoja; //objetos de la linkedlist de caminadores
     private LinkedList objPildoraAzul; // objetos de la linkedlist de corredores
     private LinkedList objBilletes; // objetos de la linkedlist de billetes
@@ -89,7 +92,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
      * 
      */ 
     public JFrameBreaking() {
-        setSize(800, 600); //define tamaño del JFrame
+       setSize(800, 600); //define tamaño del JFrame
        init();
        start();
      
@@ -144,16 +147,25 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         // inicializa el contador de colisiones de mentafetamina en 0
         iColMenta = 0;
 
-        // se crea el sombrero
-        URL urlImagenSombrero = this.getClass().getResource("sombrero.gif");
+        
         
         // posiciones del sombrero
         int posX = (getWidth()/2);
         int posY = (getHeight());
         
+        Image  sombrero1 = Toolkit.getDefaultToolkit().getImage(
+                        this.getClass().getResource("imagen/sombrero.png"));
+        Image  sombrero2 = Toolkit.getDefaultToolkit().getImage(
+                        this.getClass().getResource("imagen/sombrero4.png"));
+        Image  sombrero3 = Toolkit.getDefaultToolkit().getImage(
+                        this.getClass().getResource("imagen/sombrero5.png"));
+            
+        animSombrero = new Animacion();
+        animSombrero.sumaCuadro(sombrero1, 100);
+        animSombrero.sumaCuadro(sombrero2, 100);
+        animSombrero.sumaCuadro(sombrero3, 100);
         // se crea el sombrero
-        perSombrero = new Personaje(posX,posY,
-                    Toolkit.getDefaultToolkit().getImage(urlImagenSombrero));
+        perSombrero = new Personaje(posX,posY, animSombrero.getImagen());
         
         perSombrero.setX(posX-perSombrero.getAncho()/2);
         perSombrero.setY(posY-perSombrero.getAlto());
@@ -274,13 +286,15 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         animAmbulancia.sumaCuadro(ambulancia1, 100);
         animAmbulancia.sumaCuadro(ambulancia2, 100);
  
+        perAmbulancia =new Personaje(iPosXAnim, iPosYBotella, animAmbulancia.getImagen());
         
         // se crea la imagend e las vidas
-        int posXVidas = (int) (Math.random() * (getWidth()- 60));    
-        int posYVidas = (int) (Math.random() * (getHeight()/2))*(-1);  
+        iPosXBotella = (int) (Math.random() * (getWidth()- 60));    
+        iPosYBotella = (int) (Math.random() * (getHeight()/2))*(-1);  
         URL urlImagenVidas = this.getClass().getResource("vidas.png");
-        perVidas = new Personaje(posXVidas, posYVidas,
+        perVidas = new Personaje(iPosXBotella, iPosYBotella,
                         Toolkit.getDefaultToolkit().getImage(urlImagenVidas));
+        
         
         
         // establece la velocidad en la que caera la botella
@@ -370,7 +384,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
             
          //Guarda el tiempo actual
        	 lonTiempoActual += tiempoTranscurrido;
-
+        animSombrero.actualiza(tiempoTranscurrido);
          //Actualiza la animAmbulanciaación en base al tiempo transcurrido
          animAmbulancia.actualiza(tiempoTranscurrido);
         
@@ -427,12 +441,11 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
             }   
         }
         //actualiza la botella dependiendo de la cantidad de pildoras existentes
-        if((objPildoraRoja.size() < (45/2))){
+        if((objPildoraRoja.size() < (25))){
             perVidas.setY(perVidas.getY() + perVidas.getVelocidad());
-  
+            
         }
-        
-        
+               
         if(iCae < 4 && (objPildoraRoja.size()< 20)){
             iPosYAnim = iPosYAnim + 3;
         }
@@ -638,20 +651,27 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                     }
                 }
                 if(perVidas.colisiona(perSombrero)){
+                   
                     objPildoraAzul.remove(0);
                     objPildoraAzul.remove(1);
                     objPildoraAzul.remove(2);
-                    perVidas.setX(-getWidth());
+                    perVidas.setY(iPosYBotella);
+                    
                 }
                 
-                if(iPosYAnim + 51 > getHeight()) {
-                    iPosXAnim= (int) (Math.random() * (getWidth()- 60));    
-                    iPosYAnim = (int) (Math.random() * (getHeight()/2))*(-1); 
+                if(perBolita.getY() + perBolita.getAlto() > getHeight()) { 
+                    perVidas.setX(iPosXBotella);
+                    perVidas.setY(iPosYBotella);   
                 }
                 
-                if (perSombrero.colisiona(iPosXAnim+121, iPosYAnim+51)) {
-                    iPosXAnim= (int) (Math.random() * (getWidth()- 60));    
-                    iPosYAnim = (int) (Math.random() * (getHeight()/2))*(-1); 
+                if(perAmbulancia.getX() + perAmbulancia.getAlto() > getHeight()) {
+                    perAmbulancia.setX(iPosXAnim);
+                    perAmbulancia.setY(iPosYAnim);
+                }
+                
+                if (perSombrero.colisiona(perAmbulancia)) {
+                    perAmbulancia.setX(iPosXAnim);
+                    perAmbulancia.setY(iPosYAnim);
                     int posXPil = 40;
                     int posYPil = 190;
                     // se crea la vacia la lista de pildoras rojas
@@ -838,7 +858,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                     getWidth(), getHeight(), this);
         }
         else if ((objPildoraRoja.isEmpty()) && (objPildoraAzul.isEmpty()))  {
-            
+            booPausa = true;
             // creo imagen para el background
             URL urlImagenFondo = this.getClass().getResource("backFinal.jpg");
                 Image imaImagenJuego = Toolkit.getDefaultToolkit().
@@ -874,7 +894,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
             // desplegar imagenes
             if (perBolita != null && perSombrero != null && 
                     perMentafetamina != null && perVidas != null && 
-                        animAmbulancia != null) {
+                        perAmbulancia != null) {
                 //Dibuja la imagen de Nena en la posicion actualizada
                 g.drawImage(perBolita.getImagen(), perBolita.getX(),
                         perBolita.getY(), this);
@@ -885,7 +905,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                 g.drawImage(perMentafetamina.getImagen(), perMentafetamina.getX(),
                         perMentafetamina.getY(), this);
                 
-                g.drawImage(animAmbulancia.getImagen(),iPosXAnim, iPosYAnim, this);
+                g.drawImage(perAmbulancia.getImagen(),perAmbulancia.getX(), perAmbulancia.getY(), this);
                 
                 //Dibuja las vidas
                 g.drawImage(perVidas.getImagen(), perVidas.getX(), 
@@ -899,7 +919,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                     }
                 }
                 
-                if (!objPildoraRoja.isEmpty()) {
+                if (!objPildoraAzul.isEmpty()) {
                     for(Object objAzul :objPildoraAzul){
                     Personaje perPildora2 = (Personaje) objAzul;
                     // Dibuja la imagen de pildora azul en la posicion actualizada
