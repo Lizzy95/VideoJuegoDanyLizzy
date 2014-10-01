@@ -59,8 +59,8 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
     private LinkedList objPildoraRoja; //objetos de la linkedlist de caminadores
     private LinkedList objPildoraAzul; // objetos de la linkedlist de corredores
     private int iVelocidad; // velocidad de corre
-    private SoundClip souCamina; // sonido alegre
-    private SoundClip souCorre; //sonido triste de cuando choca
+    private SoundClip souFondo; // sonido alegre
+    private SoundClip souFinal; //sonido triste de cuando choca
     private String strNombreArchivo; // Nombre del archivo
     private String strNombreJugador; // nombre del jugador
     private String[] strArr; // arreglo del archivo dividido
@@ -68,6 +68,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
     private boolean booAyuda; // booleano para ctivar la ayuda
     private boolean booGuardar; //booleana para activar guardad
     private boolean booSpace; // booleana para activar que se valla la bolita
+    private boolean booPlay; // Control de la 
     private JList jliScore; //Lista para desplegar el puntaje
     private long lonTiempoActual; //Tiempo de control de la animacion
     
@@ -105,9 +106,10 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         
         // se incializa la ayuda en true para que se muestre la informacion
         booAyuda = true;
-        
+             
         // se da el nombre del archivo
-        strNombreArchivo = "Puntaje.txt";
+        strNombreArchivo = "Inicio.txt";
+        
         
         // incializo las vidas del juego
         iVidas = 8;//((int) (Math.random()* 3)) + 3;
@@ -134,7 +136,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         iColMenta = 0;
 
         // se crea el sombrero
-        URL urlImagenSombrero = this.getClass().getResource("sombrero2.png");
+        URL urlImagenSombrero = this.getClass().getResource("sombrero3.png");
         
         // posiciones del sombrero
         int posX = (getWidth()/2);
@@ -200,9 +202,9 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
          // se crea la lista de pildora roja
         objPildoraAzul = new LinkedList();
         
-        // inicializa la lista de pildora1
+        // inicializa la lista de pildora2
         for ( int i = 0; i < 9; i++) {
-            // se posiciona la pildora 1 en la tabla periodica
+            // se posiciona la pildora 2 en la tabla periodica
             for (int j = 0; j < 5; j++) {
                 URL urlImagenPildora2 = this.getClass().getResource("pildora2.png");
                 Personaje perPildora2 = new Personaje(posXPil2, posYPil2,
@@ -224,6 +226,14 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         
         // establece la velocidad en la que caera la botella
         perVidas.setVelocidad(4);        
+        
+        souFondo = new SoundClip("Tema.wav");
+        souFinal = new SoundClip("Final.wav");
+        
+        souFondo.setLooping(true);
+        souFondo.play();
+        
+        grabaArchivo();
         addKeyListener(this);
            
     }
@@ -612,18 +622,22 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         // si se presiona la g se guarda el juego
         else if(keyEvent.getKeyCode() == KeyEvent.VK_G){
             if(!booGuardar){
+            // se da el nombre del archivo
+            strNombreArchivo = "Puntaje.txt";
             grabaArchivo();
             }
         }
         else if(keyEvent.getKeyCode() == KeyEvent.VK_A){
+            
             booAyuda = !booAyuda;
         }
         else if(keyEvent.getKeyCode() == KeyEvent.VK_R){
-            objPildoraRoja.clear();
-            objPildoraAzul.clear();
-            setSize(800,600);
-            init();
-            start();
+            try {
+                leeArchivo();
+                
+            } catch (IOException ex) {
+                Logger.getLogger(JFrameBreaking.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         repaint();
     }
@@ -681,7 +695,8 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
             graGraficaJFrame.drawImage(imaImagenJuego, 0, 0,
                     getWidth(), getHeight(), this);
         }
-        else if (iVidas <= 0) { 
+        else if (iVidas <= 0) {
+            
             // creo imagen para el background
             URL urlImagenFondo = this.getClass().getResource("game_over.jpg");
                 Image imaImagenJuego = Toolkit.getDefaultToolkit().
@@ -690,8 +705,10 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
             // Despliego la imagen
             graGraficaJFrame.drawImage(imaImagenJuego, 0, 0, 
                     getWidth(), getHeight(), this);
+            
+            souFinal.play();
         }
-        else {
+        else {  
             g.setColor(Color.red);
             
             //se despliegan las vidas
@@ -771,33 +788,34 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         iVelocidad = (Integer.parseInt(strArr[7]));
         // lee otra linea del archivo
         dato = fileIn.readLine();
-        URL urlImagenCamina = this.getClass().getResource("alien1Camina.gif");
+        URL urlImagenRoja = this.getClass().getResource("pildora1.png");
                
-        for ( int i = 0; i <= 45; i++) {
+        for ( int i = 0; i < 45; i++) {
          // se posiciona a Susy en alguna parte al azar del cuadrante
             strArr = dato.split(",");  
             int iPosX = (Integer.parseInt(strArr[0]));
             int iPosY = (Integer.parseInt(strArr[1]));
             // se crea el objeto camina
             Personaje perPildoraR = new Personaje(iPosX, iPosY,
-                        Toolkit.getDefaultToolkit().getImage(urlImagenCamina));
+                        Toolkit.getDefaultToolkit().getImage(urlImagenRoja));
             objPildoraRoja.add(perPildoraR);  
                     // lee otra linea del archivo
             dato = fileIn.readLine();
         }
         
-        URL urlImagenCorre = this.getClass().getResource("alien2Corre.gif");
-        for (int i = 0; i <= 45; i++) {
+        URL urlImagenAzul = this.getClass().getResource("pildora2.png");
+        for (int i = 0; i < 45; i++) {
             // se posiciona a Susy en alguna parte al azar del cuadrante
+            strArr = dato.split(",");
             int iPosCorreX = (Integer.parseInt(strArr[0]));
             int iPosCorreY = (Integer.parseInt(strArr[1]));
             // se crea el objeto camina
             Personaje perPildoraA = new Personaje(iPosCorreX,iPosCorreY ,
-                    Toolkit.getDefaultToolkit().getImage(urlImagenCorre));
+                    Toolkit.getDefaultToolkit().getImage(urlImagenAzul));
             objPildoraAzul.add(perPildoraA);  
             // lee otra linea del archivo
             dato = fileIn.readLine();
-            strArr = dato.split(",");
+            
         }
         fileIn.close();
     }
