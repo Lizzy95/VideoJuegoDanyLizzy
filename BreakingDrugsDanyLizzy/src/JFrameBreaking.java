@@ -43,8 +43,10 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
     private int iColAzul; // contador de colisones azul
     private int iColision;
     private int iColMenta; // contador de colisiones de mentafetamina
-    private int iPosXBolita;
-    private int iPosYBolita;
+    private int iPosXBolita; // posicion x de bola
+    private int iPosYBolita;// posicion de y de bola
+    private int iPosXAnim; // coordenadas de la imagen anim
+    private int iPosYAnim; //coordenadas de la imagen anim
     private Image imaImagenJFrame;   // Imagen a proyectar en Applet	
     private Image imaGameOver; // imagen del fin del juego
     private Image imaFondo; // imagen de fondo
@@ -58,9 +60,12 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
     private Personaje perVidas; // objeto de la clase personaje de vidas
     private LinkedList objPildoraRoja; //objetos de la linkedlist de caminadores
     private LinkedList objPildoraAzul; // objetos de la linkedlist de corredores
+    private LinkedList objBilletes; // objetos de la linkedlist de billetes
+    private LinkedList objBilletes2; //objeto de la linkedLIST de billetes
     private int iVelocidad; // velocidad de corre
     private SoundClip souFondo; // sonido alegre
     private SoundClip souFinal; //sonido triste de cuando choca
+    private SoundClip souColision; // sonido de que rompe pastilla
     private String strNombreArchivo; // Nombre del archivo
     private String strNombreJugador; // nombre del jugador
     private String[] strArr; // arreglo del archivo dividido
@@ -70,7 +75,11 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
     private boolean booSpace; // booleana para activar que se valla la bolita
     private boolean booPlay; // Control de la 
     private JList jliScore; //Lista para desplegar el puntaje
-    private long lonTiempoActual; //Tiempo de control de la animacion
+    private Animacion animAmbulancia; //animacion de ambulancia
+    private Animacion animSombrero; // animacion de sombrero
+    //variables de control de tiempo de la animacion
+    private long lonTiempoActual;
+    private long lonTiempoInicial;
     
    /** 
      * AppletExamen
@@ -112,7 +121,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         
         
         // incializo las vidas del juego
-        iVidas = 8;//((int) (Math.random()* 3)) + 3;
+        iVidas = 3;//((int) (Math.random()* 3)) + 3;
         
         // inicializa la direccion en 0
         iDireccion = 0;
@@ -136,7 +145,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         iColMenta = 0;
 
         // se crea el sombrero
-        URL urlImagenSombrero = this.getClass().getResource("sombrero3.png");
+        URL urlImagenSombrero = this.getClass().getResource("output_t3dg2m.gif");
         
         // posiciones del sombrero
         int posX = (getWidth()/2);
@@ -151,14 +160,14 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
  
         perSombrero.setVelocidad(4);
                 
-        // se crea la changuita nena 
+        // posiciones de bolita
         int posXBol = (getWidth() / 2);
         int posYBol = (getHeight()-perSombrero.getAlto());
         
- 	// se crea imagen de pelotita
+ 	// se crea imagen de bolita
         URL urlImagenNemo = this.getClass().getResource("pelotita.png");
         
-        // se crea a Nena 
+        // se crea a bolita
 	perBolita = new Personaje(posXBol,posYBol,
                 Toolkit.getDefaultToolkit().getImage(urlImagenNemo));
 
@@ -170,9 +179,11 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         int posXMen = (getWidth()/2);
         int posYMen = 150;
         
-        URL urlImagenMentafetamina = this.getClass().getResource("mentafetamina.png");
+        // se crea la Mentafetamina
+        URL urlImagenMentafetamina = this.getClass().
+                                getResource("mentafetamina.png");
         perMentafetamina = new Personaje( posXMen, posYMen,
-                        Toolkit.getDefaultToolkit().getImage(urlImagenMentafetamina));
+                Toolkit.getDefaultToolkit().getImage(urlImagenMentafetamina));
         perMentafetamina.setX(posXMen - perMentafetamina.getAncho()/2);
         perMentafetamina.setY(posYMen - perMentafetamina.getAlto()/2);
         
@@ -184,10 +195,11 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         objPildoraRoja = new LinkedList();
         
         // inicializa la lista de pildora1
-        for ( int i = 0; i < 9; i++) {
+        for ( int iI = 0; iI < 9; iI++) {
             // se posiciona la pildora 1 en la tabla periodica
-            for (int j = 0; j < 5; j++) {
-                URL urlImagenPildora = this.getClass().getResource("pildora1.png");
+            for (int iJ = 0; iJ < 5; iJ++) {
+                URL urlImagenPildora = this.getClass().
+                        getResource("pildora1.png");
                 Personaje perPildora1 = new Personaje(posXPil, posYPil,
                         Toolkit.getDefaultToolkit().getImage(urlImagenPildora));
                 objPildoraRoja.add(perPildora1);
@@ -199,22 +211,69 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         
         int posXPil2 = 410;
         int posYPil2 = 190;
-         // se crea la lista de pildora roja
+         // se crea la lista de pildora azul
         objPildoraAzul = new LinkedList();
         
         // inicializa la lista de pildora2
-        for ( int i = 0; i < 9; i++) {
+        for ( int iI = 0; iI < 9; iI++) {
             // se posiciona la pildora 2 en la tabla periodica
-            for (int j = 0; j < 5; j++) {
-                URL urlImagenPildora2 = this.getClass().getResource("pildora2.png");
+            for (int iJ = 0; iJ < 5; iJ++) {
+                URL urlImagenPildora2 = this.getClass().
+                        getResource("pildora2.png");
                 Personaje perPildora2 = new Personaje(posXPil2, posYPil2,
-                        Toolkit.getDefaultToolkit().getImage(urlImagenPildora2));
+                    Toolkit.getDefaultToolkit().getImage(urlImagenPildora2));
                 objPildoraAzul.add(perPildora2);
                 posYPil2= posYPil2+40;
             }    
             posXPil2= posXPil2 +40;
             posYPil2= 190;
         }
+        
+        // se crea la lista de los billetes
+        objBilletes = new LinkedList();
+        
+        //se crea la lista de los billetes
+        for( int iI = 1; iI <=20; iI++) {
+            // se posicion la galleta en alguna parte al azar del cuadrante 
+            // inferior derecho
+            posX = (int) (Math.random() * (getWidth()- 60));    
+            posY = (int) (Math.random() * (getHeight()/2))*(-1);    
+            URL urlImagenBillete = this.getClass().getResource("billete1.png");
+
+            // se crea el objeto galleta
+            Personaje perBillete = new Personaje(posX,posY,
+                Toolkit.getDefaultToolkit().getImage(urlImagenBillete));
+            objBilletes.add(perBillete);
+        }
+        
+        //se crea la lista de objetos de billetes2
+        objBilletes2 = new LinkedList();
+        
+        //se crea la lista de los billetes
+        for( int iI = 1; iI <=20; iI++) {
+            // se posiciona el billete fuera del applet
+            posX = (int) (Math.random() * (getWidth()- 60));    
+            posY = (int) (Math.random() * (getHeight()/3))*(-1);    
+            URL urlImagenBillete2 = this.getClass().getResource("billete2.png");
+
+            // se crea el objeto billete
+            Personaje perBillete2 = new Personaje(posX,posY,
+                Toolkit.getDefaultToolkit().getImage(urlImagenBillete2));
+            objBilletes2.add(perBillete2);
+        }
+        
+        iPosXAnim= (int) (Math.random() * (getWidth()- 60));    
+        iPosYAnim = (int) (Math.random() * (getHeight()/2))*(-1); 
+
+        Image  ambulancia1 = Toolkit.getDefaultToolkit().getImage(
+                        this.getClass().getResource("imagenes/sirena1.png"));
+        Image  ambulancia2 = Toolkit.getDefaultToolkit().getImage(
+                        this.getClass().getResource("imagenes/sirena2.png"));
+            
+        animAmbulancia = new Animacion();
+        animAmbulancia.sumaCuadro(ambulancia1, 100);
+        animAmbulancia.sumaCuadro(ambulancia2, 100);
+ 
         
         // se crea la imagend e las vidas
         int posXVidas = (int) (Math.random() * (getWidth()- 60));    
@@ -229,6 +288,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         
         souFondo = new SoundClip("Tema.wav");
         souFinal = new SoundClip("Final.wav");
+        souColision = new SoundClip("rompe.wav");
         
         souFondo.setLooping(true);
         souFondo.play();
@@ -243,7 +303,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
      * 
      * Metodo sobrescrito de la clase <code>Applet</code>.<P>
      * En este metodo se crea e inicializa el hilo
-     * para la animacion este metodo es llamado despues del init o 
+     * para la animAmbulanciaacion este metodo es llamado despues del init o 
      * cuando el usuario visita otra pagina y luego regresa a la pagina
      * en donde esta este <code>Applet</code>
      * 
@@ -265,8 +325,10 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
      */
     public void run () {
         
+        //Guarda tiempo actual del sistema
+        lonTiempoActual = System.currentTimeMillis();
         // se realiza el ciclo del juego en este caso nunca termina
-        while (iVidas > 0) {
+        while (true) {
             /* mientras dure el juego, se actualizan posiciones de jugadores
                se checa si hubo colisiones para desaparecer jugadores o corregir
                movimientos y se vuelve a pintar todo
@@ -301,6 +363,17 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
      * 
      */
     public synchronized void actualiza(){
+        //Determina el tiempo que ha transcurrido desde que el Applet inicio su 
+        //ejecución
+         long tiempoTranscurrido =
+             System.currentTimeMillis() - lonTiempoActual;
+            
+         //Guarda el tiempo actual
+       	 lonTiempoActual += tiempoTranscurrido;
+
+         //Actualiza la animAmbulanciaación en base al tiempo transcurrido
+         animAmbulancia.actualiza(tiempoTranscurrido);
+        
         //Dependiendo de la iDireccion de nena es a donde se movera
         switch(iDireccion) {
             case 1: { //se mueve hacia izquierda
@@ -353,9 +426,25 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                 }
             }   
         }
-        
-        if(iVidas <= 4){
+        //actualiza la botella dependiendo de la cantidad de pildoras existentes
+        if(iVidas <= 4/*objPildoraRoja.size() <objPildoraAzul.size()*/ ){
             perVidas.setY(perVidas.getY() + perVidas.getVelocidad());
+            if(iPosYAnim > -80){
+                iPosYAnim = iPosYAnim + 1;
+            }
+            
+            
+        }
+        //si se acaba el juego se sueltan los billetes
+        if (iVidas == 0/*objPildoraRoja.empty() && objPildoraAzul.empty()*/) {
+            for(Object objBillete :objBilletes){
+            Personaje perBillete = (Personaje) objBillete;
+            perBillete.setY(perBillete.getY() + 6);
+            }
+            for(Object objBillete2 :objBilletes2){
+            Personaje perBillete2 = (Personaje) objBillete2;
+            perBillete2.setY(perBillete2.getY() + 6);
+            }
         }
     }
 	
@@ -468,6 +557,9 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                     Personaje perPildora1 = (Personaje) objRoja; 
                     if(perPildora1.colisiona(perBolita)){
                         iScore++;
+                        souColision.play();
+                        //dependiendo de la colision de la pelota con la pildora
+                        // es como rebotara la pelota
                         if(iColision== 1){
                             iColision = 2;
                         }
@@ -482,6 +574,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                         }
                         perPildora1.setX(-getWidth());
                         perPildora1.setY(-(getHeight()/2));
+                       // objPildoraRoja.remove(objRoja);
                     }
                 }
                 for(Object objAzul :objPildoraAzul){
@@ -489,10 +582,14 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                     if(perPildora2.colisiona(perBolita)){
                         
                         iColAzul++;
+                        //dependiendo de la colision de la pelota con la pildora
+                        // es como rebotara la pelota
                         if (iColAzul == 2) {
+                            souColision.play();
                             iScore=iScore+2;
                             perPildora2.setX(-getWidth());
                             perPildora2.setY(-(getHeight()/2));
+                            //objPildoraAzul.remove(objAzul);
                             iColAzul=0;
                         }
                         else{
@@ -514,6 +611,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                     }
                 }
                 
+                //elimina la mentafetamina hasta que haya sido golpeada 5 veces
                 if (perMentafetamina.colisiona(perBolita)) {
                     iColMenta++;
                     if (iColMenta == 5) {
@@ -538,7 +636,23 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                 }
                 if(perVidas.colisiona(perSombrero)){
                     iVidas++;
+                    perVidas.setX(-getWidth());
                 }
+                //if (iPosXAnim > perSombrero.getX() && iPosXAnim < (perSombrero.getX()+perSombrero.getAncho())) {
+                  /*  if (iPosYAnim == (perSombrero.getY()-perSombrero.getAlto())) {
+                        iPosYAnim = (-80);
+                        iPosXAnim = (-400);
+                        try {
+                            leeArchivo();
+                
+                        } catch (IOException ex) {
+                            Logger.getLogger(JFrameBreaking.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    
+                    }*/
+            
+                //}       
+     
     }
  /**
      * reposiciona 
@@ -627,10 +741,12 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
             grabaArchivo();
             }
         }
+        //tecla que se aparece al inicio y al querer ayuda
         else if(keyEvent.getKeyCode() == KeyEvent.VK_A){
             
             booAyuda = !booAyuda;
         }
+        // se reinicia el juego
         else if(keyEvent.getKeyCode() == KeyEvent.VK_R){
             try {
                 leeArchivo();
@@ -661,7 +777,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         }
 
         // creo imagen para el background
-        URL urlImagenFondo = this.getClass().getResource("back_juego.jpg");
+        URL urlImagenFondo = this.getClass().getResource("backjuego.jpg");
         Image imaImagenEspacio = Toolkit.getDefaultToolkit().
                                                 getImage(urlImagenFondo);
 
@@ -698,27 +814,42 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         else if (iVidas <= 0) {
             
             // creo imagen para el background
-            URL urlImagenFondo = this.getClass().getResource("game_over.jpg");
+            URL urlImagenFondo = this.getClass().getResource("backFinal.jpg");
                 Image imaImagenJuego = Toolkit.getDefaultToolkit().
                                         getImage(urlImagenFondo);
 
             // Despliego la imagen
             graGraficaJFrame.drawImage(imaImagenJuego, 0, 0, 
                     getWidth(), getHeight(), this);
-            
+            if (objBilletes.size() != 0) {
+                for (Object objBillete :objBilletes){
+                    Personaje perBillete = (Personaje) objBillete;
+                    //Dibuja la imagen de billete en la posicion actualizada
+                    g.drawImage(perBillete.getImagen(), perBillete.getX(), 
+                            perBillete.getY(), this);
+                }
+                
+                for (Object objBillete2 :objBilletes2){
+                    Personaje perBillete2 = (Personaje) objBillete2;
+                    //Dibuja la imagen de billete en la posicion actualizada
+                    g.drawImage(perBillete2.getImagen(), perBillete2.getX(), 
+                            perBillete2.getY(), this);
+                }
+            }
             souFinal.play();
         }
         else {  
             g.setColor(Color.red);
             
-            //se despliegan las vidas
-            g.drawString("Vidas: "+ Integer.toString(iVidas), 40, 35);
-            
+            Font f = new Font("Helvetica",Font.ITALIC, 30);
             // se despliega el score
-            g.drawString("Score: " + Integer.toString(iScore), 95, 35);
-            
+            g.drawString(Integer.toString(iScore), 490, 50);
+            g.setFont(f);
             // desplegar imagenes
-            if (perBolita != null && perSombrero != null && perMentafetamina != null && objPildoraRoja.size() != 0 && objPildoraAzul.size() != 0 && perVidas != null) {
+            if (perBolita != null && perSombrero != null && 
+                    perMentafetamina != null && objPildoraRoja.size() != 0 
+                    && objPildoraAzul.size() != 0 && perVidas != null && 
+                        animAmbulancia != null) {
                 //Dibuja la imagen de Nena en la posicion actualizada
                 g.drawImage(perBolita.getImagen(), perBolita.getX(),
                         perBolita.getY(), this);
@@ -728,6 +859,8 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                 //Dibuja la mentafetamina
                 g.drawImage(perMentafetamina.getImagen(), perMentafetamina.getX(),
                         perMentafetamina.getY(), this);
+                
+                g.drawImage(animAmbulancia.getImagen(),iPosXAnim, iPosYAnim, this);
                 
                 //Dibuja las vidas
                 g.drawImage(perVidas.getImagen(), perVidas.getX(), 
@@ -746,8 +879,6 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
                     g.drawImage(perPildora2.getImagen(), perPildora2.getX(), 
                             perPildora2.getY(), this);
                 }
-                
-
             }
         }
     }
@@ -775,23 +906,25 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         String dato = fileIn.readLine();
         strArr = dato.split(",");
         /* lee cada una de las variables del arreglo y se las asigna 
-        * score, vidas, posicion nena, camina, corre, colisiones y
+        * score, vidas, posicion sombreor, camina, corre, colisiones y
         *velocidad segun corresponda
         */
         iScore = (Integer.parseInt(strArr[0]));
         iVidas = (Integer.parseInt(strArr[1]));
-        perBolita.setX((Integer.parseInt(strArr[2])));
-        perBolita.setY((Integer.parseInt(strArr[3])));
-        iColRoja = (Integer.parseInt(strArr[4]));
-        iColAzul = (Integer.parseInt(strArr[5]));
-        iColMenta = (Integer.parseInt(strArr[6]));
-        iVelocidad = (Integer.parseInt(strArr[7]));
+        perSombrero.setX((Integer.parseInt(strArr[2])));
+        perSombrero.setY((Integer.parseInt(strArr[3])));
+        perBolita.setX((Integer.parseInt(strArr[4])));
+        perBolita.setY((Integer.parseInt(strArr[5])));
+        iColRoja = (Integer.parseInt(strArr[6]));
+        iColAzul = (Integer.parseInt(strArr[7]));
+        iColMenta = (Integer.parseInt(strArr[8]));
+        iVelocidad = (Integer.parseInt(strArr[9]));
         // lee otra linea del archivo
         dato = fileIn.readLine();
         URL urlImagenRoja = this.getClass().getResource("pildora1.png");
                
         for ( int i = 0; i < 45; i++) {
-         // se posiciona a Susy en alguna parte al azar del cuadrante
+         // se posiciona a Pildora en alguna parte al azar del cuadrante
             strArr = dato.split(",");  
             int iPosX = (Integer.parseInt(strArr[0]));
             int iPosY = (Integer.parseInt(strArr[1]));
@@ -805,7 +938,7 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
         
         URL urlImagenAzul = this.getClass().getResource("pildora2.png");
         for (int i = 0; i < 45; i++) {
-            // se posiciona a Susy en alguna parte al azar del cuadrante
+            // se posiciona a Pildora en alguna parte al azar del cuadrante
             strArr = dato.split(",");
             int iPosCorreX = (Integer.parseInt(strArr[0]));
             int iPosCorreY = (Integer.parseInt(strArr[1]));
@@ -832,8 +965,9 @@ public class JFrameBreaking extends JFrame implements Runnable, KeyListener {
             PrintWriter fileOut = new PrintWriter(new 
                                         FileWriter(strNombreArchivo));
             // graba en el archivo la informacion del juego
-            fileOut.println(iScore+ ","+ iVidas+ ","+ perBolita.getX()
-                    + ","+ perBolita.getY()+ ","+ iColRoja+ ","+ iColAzul+ ","
+            fileOut.println(iScore+ ","+ iVidas+ ","+ perSombrero.getX()
+                    + ","+ perSombrero.getY()+ ","+ perBolita.getX()
+                    + ","+ perBolita.getY()+","+ iColRoja+ ","+ iColAzul+ ","
                                                 +iColMenta+ ","+iVelocidad);
             // graba en el archivo la  posicion de caminadores
             for( Object objCamina :objPildoraRoja) {
